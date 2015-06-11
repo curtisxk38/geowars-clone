@@ -12,10 +12,10 @@ class Wall(pygame.sprite.Sprite):
         self.y = y
         self.rect = pygame.Rect(x, y, l, w)
         wall_list.append(self)
-        #pygame.sprite.Sprite.__init__(self)
-        #self.image = pygame.image.load(os.path.join("data", "brick.bmp"))
+        # self.image = pygame.image.load(os.path.join("data", "brick.bmp"))
+
     def update(self):
-        #update sprite, wall doesn't change so...
+        # update sprite, wall doesn't change so...
         pass
 
     def __repr__(self):

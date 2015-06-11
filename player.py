@@ -2,7 +2,6 @@ import pygame
 import math
 import colors
 import os
-import vector
 import wall
 
 class Player(pygame.sprite.Sprite):
@@ -16,14 +15,15 @@ class Player(pygame.sprite.Sprite):
 
         self.rect = self.image.get_rect()
 
-        self.pos = vector.Vector(x, y)
-        self.velocity = vector.Vector(0, 0)
-        self.last_velocity = vector.Vector(0, 0)
+        self.pos = pygame.math.Vector2(x, y)
+        self.velocity = pygame.math.Vector2(0, 0)
+        self.last_velocity = pygame.math.Vector2(0, 0)
 
         self.rect.topleft = (self.pos.x, self.pos.y)
 
         self.left_pressed = self.right_pressed = self.up_pressed = self.down_pressed = self.recently_pressed = False
 
+        self.PROJECTILE_SPEED = 2
         self.bullet_list = []
 
     def update(self):
@@ -105,10 +105,12 @@ class Player(pygame.sprite.Sprite):
         self.image = rotated_image
 
     def shoot(self, mouse):
-        PROJECTILE_SPEED = 2
-        difference = vector.Vector(mouse[0] - self.rect.centerx, mouse[1] - self.rect.centery)
-        difference.divide_by_scalar(difference.get_mag()/PROJECTILE_SPEED)
-        self.bullet_list.append(Bullet(self.pos.copy(), difference))
+        difference = pygame.math.Vector2(mouse[0] - self.rect.centerx, mouse[1] - self.rect.centery)
+        difference.scale_to_length(self.PROJECTILE_SPEED)
+        # No copy() method of pygame.math.Vector2 ??
+        # Guess I'll do it like below
+        copy_of_pos = pygame.math.Vector2(self.pos.x, self.pos.y)
+        self.bullet_list.append(Bullet(copy_of_pos, difference))
         print(len(self.bullet_list))
 
 
@@ -125,7 +127,7 @@ class Bullet(pygame.sprite.Sprite):
         # self.rotate_center(self.find_angle())
 
     def update(self):
-        self.pos.add_vector(self.velocity)
+        self.pos+=self.velocity
         self.rect.topleft = (self.pos.x, self.pos.y)
 
     def find_angle(self):

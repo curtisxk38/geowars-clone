@@ -4,7 +4,6 @@ import player
 import wall
 import camera
 import os
-import vector
 
 pygame.init()
 #pygame.font.init()
