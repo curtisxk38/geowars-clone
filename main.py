@@ -23,41 +23,6 @@ def simple_camera(camera_used, target_rect):
     #center on player
     return pygame.Rect(-x+WINDOW_SIZE[0]/2, -y+WINDOW_SIZE[1]/2, l, w)
 
-lines_list = []
-class BackgroundLine(pygame.sprite.Sprite):
-    def __init__(self, p1, p2, width, color):
-        pygame.sprite.Sprite.__init__(self)
-        if p1.x == p2.x:
-            x = p1.x + width
-            y = abs(p1.y - p2.y)
-        else:
-            x = abs(p1.x - p2.x)
-            y = p1.y + width
-        self.image = pygame.Surface((x,y))
-        self.image.fill(color)
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (p1.x, p1.y)
-        lines_list.append(self)
-
-    def update(self):
-        pass
-
-
-def generate_background_lines(x, y, interval):
-    counter = 0
-    while counter<x:
-        point1 = vector.Vector(counter, 0)
-        point2 = vector.Vector(counter, y)
-        BackgroundLine(point1, point2, 2, colors.PURPLEY_BLACK)
-        counter += interval
-    counter = 0
-    while counter<y:
-        point1 = vector.Vector(0, counter)
-        point2 = vector.Vector(x, counter)
-        BackgroundLine(point1, point2, 2, colors.PURPLEY_BLACK)
-        counter+= interval
-
-
 WINDOW_SIZE = (720, 480)
 main_screen = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption("Geowars Clone")
@@ -106,12 +71,10 @@ def main():
 
     TOTAL_LEVEL_SIZE = (720, 1080)
 
-    #generate_background_lines(TOTAL_LEVEL_SIZE[0], TOTAL_LEVEL_SIZE[1], 32)
-
     camera_obj = camera.Camera(simple_camera, TOTAL_LEVEL_SIZE[0], TOTAL_LEVEL_SIZE[1])
     player_obj = player.Player(WINDOW_SIZE[0]/2, WINDOW_SIZE[1]/2)
 
-    all_sprites = pygame.sprite.Group(player_obj, wall.wall_list, lines_list)
+    all_sprites = pygame.sprite.Group(player_obj, wall.wall_list)
 
     game_running = True
     while game_running:
