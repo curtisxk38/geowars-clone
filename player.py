@@ -26,15 +26,14 @@ class Player(pygame.sprite.Sprite):
 
         self.bullet_list = []
 
-
     def update(self):
         self.set_velocity()
         self.update_direction()
         self.move()
 
     def set_velocity(self):
-        #not so good way of handling presses and releases of inputs
-        #left and right
+        # not so good way of handling presses and releases of inputs
+        # left and right
         if self.left_pressed and not self.right_pressed:
             self.velocity.x = -2
         elif not self.left_pressed and self.right_pressed:
@@ -64,7 +63,7 @@ class Player(pygame.sprite.Sprite):
             self.velocity.y = 0
 
     def update_direction(self):
-        #dont actually like this, but it works....
+        # dont actually like this, but it works....
         if self.velocity.x != 0 or self.velocity.y != 0:
             direction_angle = math.atan2(-self.velocity.y, self.velocity.x)
         else:
@@ -73,7 +72,7 @@ class Player(pygame.sprite.Sprite):
         self.rotate_center(direction_angle)
 
     def move(self):
-        #update each axis one at a time
+        # update each axis one at a time
         if self.velocity.x != 0:
             self.move_on_direction(self.velocity.x, 0)
         if self.velocity.y != 0:
@@ -82,22 +81,22 @@ class Player(pygame.sprite.Sprite):
     def move_on_direction(self, dx, dy):
         self.rect.move_ip(dx, dy)
         wall_collision = self.rect.collidelist(wall.wall_list)
-        if wall_collision != -1: #if there is a collision:
+        if wall_collision != -1: # if there is a collision:
             if dx > 0:
-                #moving right, hit left side of wall
+                # moving right, hit left side of wall
                 self.rect.right = wall.wall_list[wall_collision].rect.left
             if dx < 0:
-                #moving left, hit right side of wall
+                # moving left, hit right side of wall
                 self.rect.left = wall.wall_list[wall_collision].rect.right
             if dy > 0:
-                #moving down, hit top of wall
+                # moving down, hit top of wall
                 self.rect.bottom = wall.wall_list[wall_collision].rect.top
             if dy < 0:
-                #moving up, hit bottom of wall
+                # moving up, hit bottom of wall
                 self.rect.top = wall.wall_list[wall_collision].rect.bottom
 
     def rotate_center(self, angle):
-        #rotate counterclockwise to angle
+        # rotate counterclockwise to angle
         original_rect = self.image.get_rect()
         rotated_image = pygame.transform.rotate(self.original_image, angle)
         rotated_rect = original_rect.copy()
@@ -109,7 +108,8 @@ class Player(pygame.sprite.Sprite):
         PROJECTILE_SPEED = 2
         difference = vector.Vector(mouse[0] - self.rect.centerx, mouse[1] - self.rect.centery)
         difference.divide_by_scalar(difference.get_mag()/PROJECTILE_SPEED)
-        self.bullet_list.append(Bullet(self.pos, difference))
+        self.bullet_list.append(Bullet(self.pos.copy(), difference))
+        print(len(self.bullet_list))
 
 
 class Bullet(pygame.sprite.Sprite):
@@ -118,11 +118,12 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.image.load(os.path.join("data", "bullet.bmp"))
         self.image.set_colorkey(colors.BLACK)
         self.image.convert()
-        self.original_image = self.image
-        self.rect = self.image.get_rect()
+        # self.original_image = self.image
+        self.rect = self.image.get_rect().copy()
         self.pos = position
         self.velocity = velocity
-        #self.rotate_center(self.find_angle())
+        # self.rotate_center(self.find_angle())
+
     def update(self):
         self.pos.add_vector(self.velocity)
         self.rect.topleft = (self.pos.x, self.pos.y)
@@ -132,7 +133,7 @@ class Bullet(pygame.sprite.Sprite):
         return angle
 
     def rotate_center(self, angle):
-        #rotate counterclockwise to angle
+        # rotate counterclockwise to angle
         original_rect = self.image.get_rect()
         rotated_image = pygame.transform.rotate(self.original_image, angle)
         rotated_rect = original_rect.copy()

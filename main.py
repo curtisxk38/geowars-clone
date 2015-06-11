@@ -38,6 +38,7 @@ class BackgroundLine(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (p1.x, p1.y)
         lines_list.append(self)
+
     def update(self):
         pass
 
@@ -103,7 +104,7 @@ def main():
         y += 16
         x = 0
 
-    TOTAL_LEVEL_SIZE =  (720, 1080)
+    TOTAL_LEVEL_SIZE = (720, 1080)
 
     #generate_background_lines(TOTAL_LEVEL_SIZE[0], TOTAL_LEVEL_SIZE[1], 32)
 
@@ -111,7 +112,6 @@ def main():
     player_obj = player.Player(WINDOW_SIZE[0]/2, WINDOW_SIZE[1]/2)
 
     all_sprites = pygame.sprite.Group(player_obj, wall.wall_list, lines_list)
-
 
     game_running = True
     while game_running:
@@ -158,7 +158,6 @@ def main():
         #all_sprites.add(player_obj.bullet_list)
         for bullet in player_obj.bullet_list:
             bullet.update()
-
 
         x = player_obj.last_velocity
         text_to_print = {'test': (print_text(str(x), colors.BLACK, 25), (100,100))}

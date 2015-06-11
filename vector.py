@@ -5,6 +5,9 @@ class Vector:
         self.x = x
         self.y = y
 
+    def copy(self):
+        return Vector(self.x, self.y)
+
     def __repr__(self):
         return "<Vector: (%s, %s)>" % (self.x, self.y)
 
