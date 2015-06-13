@@ -49,16 +49,11 @@ class Control():
             self.state.get_event(event)
 
     def main(self):
-        previous = self.CLOCK.tick()
         lag = 0.0
         while not self.game_done:
-            current = self.CLOCK.tick()
-            elapsed = current - previous
-            previous = current
-            lag += elapsed
+            lag += self.CLOCK.tick()
 
             self.event_loop()
-
             while lag >= self.MS_PER_UPDATE:
                 self.update()
                 lag -= self.MS_PER_UPDATE
