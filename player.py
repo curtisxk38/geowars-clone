@@ -25,7 +25,7 @@ class Player(pygame.sprite.Sprite):
         self.left_pressed = self.right_pressed = self.up_pressed = self.down_pressed = False
         self.recently_pressed = None
 
-        self.PROJECTILE_SPEED = 2
+        self.PROJECTILE_SPEED = 4
         self.bullet_list = []
 
     def update(self):
@@ -112,9 +112,7 @@ class Player(pygame.sprite.Sprite):
         difference.scale_to_length(self.PROJECTILE_SPEED)
         # No copy() method of pygame.math.Vector2 ??
         # Guess I'll do it like below
-        print(self.pos)
         copy_of_pos = pygame.math.Vector2(self.pos.x, self.pos.y)
-        print(copy_of_pos)
         self.bullet_list.append(Bullet(copy_of_pos, difference))
 
 
@@ -124,26 +122,23 @@ class Bullet(pygame.sprite.Sprite):
         self.image = pygame.image.load(os.path.join("data", "bullet.bmp"))
         self.image.set_colorkey(colors.BLACK)
         self.image.convert()
-        # self.original_image = self.image
-        self.rect = self.image.get_rect().copy()
+        self.original_image = self.image
+        self.rect = self.image.get_rect()
         self.pos = position
         self.velocity = velocity
-        # self.rotate_center(self.find_angle())
+        self.rotate_center(self.find_angle())
 
     def update(self):
         self.pos+=self.velocity
         self.rect.topleft = (self.pos.x, self.pos.y)
 
     def find_angle(self):
-        angle = 135-math.degrees(math.atan2(self.velocity.x, self.velocity.y))
+        angle = 180+math.degrees(math.atan2(self.velocity.x, self.velocity.y))
         return angle
 
     def rotate_center(self, angle):
         # rotate counterclockwise to angle
-        original_rect = self.image.get_rect()
         rotated_image = pygame.transform.rotate(self.original_image, angle)
-        rotated_rect = original_rect.copy()
-        rotated_rect.center = rotated_image.get_rect().center
-        rotated_image = rotated_image.subsurface(rotated_rect).copy()
         self.image = rotated_image
+        self.rect = self.image.get_rect()
 
