@@ -32,6 +32,7 @@ class Player(pygame.sprite.Sprite):
         self.set_velocity()
         self.update_direction()
         self.move()
+        self.pos.x, self.pos.y = self.rect.center
 
     def set_velocity(self):
         # not so good way of handling presses and releases of inputs
@@ -111,9 +112,10 @@ class Player(pygame.sprite.Sprite):
         difference.scale_to_length(self.PROJECTILE_SPEED)
         # No copy() method of pygame.math.Vector2 ??
         # Guess I'll do it like below
+        print(self.pos)
         copy_of_pos = pygame.math.Vector2(self.pos.x, self.pos.y)
+        print(copy_of_pos)
         self.bullet_list.append(Bullet(copy_of_pos, difference))
-        print(len(self.bullet_list))
 
 
 class Bullet(pygame.sprite.Sprite):

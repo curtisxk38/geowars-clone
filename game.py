@@ -37,6 +37,11 @@ class GameState(control.State):
             self.my_player.key_pressed[self.player_pressed_dict[key]] = self.pressed_keys[key]
         if event.type == pygame.KEYDOWN:
             self.my_player.recently_pressed = self.player_pressed_dict.get(event.key)
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            # get_pressed() returns a tuple with booleans
+            # for (leftclick, mwheelclick, rightclick)
+            if pygame.mouse.get_pressed()[0] == 1:
+                self.my_player.shoot(pygame.mouse.get_pos())
 
     def update(self, screen):
         self.my_player.update()
@@ -46,6 +51,8 @@ class GameState(control.State):
         screen.fill(colors.BLACK)
         for thing in self.all_sprites:
             screen.blit(thing.image, thing.rect)
+        for bullet in self.my_player.bullet_list:
+            screen.blit(bullet.image, bullet.rect)
 
     def make_player_dict(self):
         player_dict = {key_bindings_dict["LEFT"]: "LEFT",
