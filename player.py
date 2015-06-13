@@ -21,7 +21,9 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.topleft = (self.pos.x, self.pos.y)
 
-        self.left_pressed = self.right_pressed = self.up_pressed = self.down_pressed = self.recently_pressed = False
+        self.key_pressed = {"LEFT": False, "RIGHT": False, "UP": False, "DOWN": False}
+        self.left_pressed = self.right_pressed = self.up_pressed = self.down_pressed = False
+        self.recently_pressed = None
 
         self.PROJECTILE_SPEED = 2
         self.bullet_list = []
@@ -34,28 +36,28 @@ class Player(pygame.sprite.Sprite):
     def set_velocity(self):
         # not so good way of handling presses and releases of inputs
         # left and right
-        if self.left_pressed and not self.right_pressed:
+        if self.key_pressed["LEFT"] and not self.key_pressed["RIGHT"]:
             self.velocity.x = -2
-        elif not self.left_pressed and self.right_pressed:
+        elif not self.key_pressed["LEFT"] and self.key_pressed["RIGHT"]:
             self.velocity.x = 2
-        elif self.left_pressed and self.right_pressed:
-            if self.recently_pressed == pygame.K_a:
+        elif self.key_pressed["LEFT"] and self.key_pressed["RIGHT"]:
+            if self.recently_pressed == "LEFT":
                 self.velocity.x = -2
-            elif self.recently_pressed == pygame.K_d:
+            elif self.recently_pressed == "RIGHT":
                 self.velocity.x = 2
         else:
             if self.velocity.x != 0 or self.velocity.y != 0:
                 self.last_velocity.x = self.velocity.x
             self.velocity.x = 0
         #up and down
-        if self.up_pressed and not self.down_pressed:
+        if self.key_pressed["UP"] and not self.key_pressed["DOWN"]:
             self.velocity.y = -2
-        elif not self.up_pressed and self.down_pressed:
+        elif not self.key_pressed["UP"] and self.key_pressed["DOWN"]:
             self.velocity.y = 2
-        elif self.down_pressed and self.up_pressed:
-            if self.recently_pressed == pygame.K_w:
+        elif self.key_pressed["DOWN"] and self.key_pressed["UP"]:
+            if self.recently_pressed == "UP":
                 self.velocity.y = -2
-            elif self.recently_pressed == pygame.K_s:
+            elif self.recently_pressed == "DOWN":
                 self.velocity.y = 2
         else:
             if self.velocity.y != 0 or self.velocity.x != 0:

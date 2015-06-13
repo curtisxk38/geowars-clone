@@ -17,7 +17,7 @@ class GameState(control.State):
         control.State.__init__(self)
         self.pressed_keys = None
 
-        self.my_player = player.Player(0, 0)
+        self.my_player = player.Player(50, 50)
         self.player_pressed_dict = self.make_player_dict()
         self.make_level()
         self.all_sprites = pygame.sprite.Group(self.my_player, wall.wall_list)
@@ -34,7 +34,9 @@ class GameState(control.State):
         if self.pressed_keys[pygame.K_ESCAPE]:
             self.quit = True
         for key in self.player_pressed_dict:
-            self.player_pressed_dict[key] = self.pressed_keys
+            self.my_player.key_pressed[self.player_pressed_dict[key]] = self.pressed_keys[key]
+        if event.type == pygame.KEYDOWN:
+            self.my_player.recently_pressed = self.player_pressed_dict.get(event.key)
 
     def update(self, screen):
         self.my_player.update()
@@ -46,10 +48,10 @@ class GameState(control.State):
             screen.blit(thing.image, thing.rect)
 
     def make_player_dict(self):
-        player_dict = {key_bindings_dict["LEFT"]: self.my_player.left_pressed,
-                       key_bindings_dict["RIGHT"]: self.my_player.right_pressed,
-                       key_bindings_dict["UP"]: self.my_player.up_pressed,
-                       key_bindings_dict["DOWN"]: self.my_player.down_pressed}
+        player_dict = {key_bindings_dict["LEFT"]: "LEFT",
+                       key_bindings_dict["RIGHT"]: "RIGHT",
+                       key_bindings_dict["UP"]: "UP",
+                       key_bindings_dict["DOWN"]: "DOWN"}
         return player_dict
 
     def make_level(self):
