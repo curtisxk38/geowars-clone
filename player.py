@@ -10,11 +10,10 @@ class Player(pygame.sprite.Sprite):
         self.image = pygame.image.load(os.path.join("data", "player.bmp"))
         self.image.set_colorkey(colors.BLACK)
         self.image.convert()
-
         self.original_image = self.image
-
         self.rect = self.image.get_rect()
 
+        self.max_velocity = 4
         self.pos = pygame.math.Vector2(x, y)
         self.velocity = pygame.math.Vector2(0, 0)
         self.last_velocity = pygame.math.Vector2(0, 0)
@@ -25,7 +24,7 @@ class Player(pygame.sprite.Sprite):
         self.left_pressed = self.right_pressed = self.up_pressed = self.down_pressed = False
         self.recently_pressed = None
 
-        self.PROJECTILE_SPEED = 4
+        self.PROJECTILE_SPEED = 10
         self.bullet_list = []
 
     def update(self):
@@ -38,28 +37,28 @@ class Player(pygame.sprite.Sprite):
         # not so good way of handling presses and releases of inputs
         # left and right
         if self.key_pressed["LEFT"] and not self.key_pressed["RIGHT"]:
-            self.velocity.x = -2
+            self.velocity.x = -1 * self.max_velocity
         elif not self.key_pressed["LEFT"] and self.key_pressed["RIGHT"]:
-            self.velocity.x = 2
+            self.velocity.x = self.max_velocity
         elif self.key_pressed["LEFT"] and self.key_pressed["RIGHT"]:
             if self.recently_pressed == "LEFT":
-                self.velocity.x = -2
+                self.velocity.x = -1 * self.max_velocity
             elif self.recently_pressed == "RIGHT":
-                self.velocity.x = 2
+                self.velocity.x = self.max_velocity
         else:
             if self.velocity.x != 0 or self.velocity.y != 0:
                 self.last_velocity.x = self.velocity.x
             self.velocity.x = 0
         #up and down
         if self.key_pressed["UP"] and not self.key_pressed["DOWN"]:
-            self.velocity.y = -2
+            self.velocity.y = -1 * self.max_velocity
         elif not self.key_pressed["UP"] and self.key_pressed["DOWN"]:
-            self.velocity.y = 2
+            self.velocity.y = self.max_velocity
         elif self.key_pressed["DOWN"] and self.key_pressed["UP"]:
             if self.recently_pressed == "UP":
-                self.velocity.y = -2
+                self.velocity.y = -1 * self.max_velocity
             elif self.recently_pressed == "DOWN":
-                self.velocity.y = 2
+                self.velocity.y = self.max_velocity
         else:
             if self.velocity.y != 0 or self.velocity.x != 0:
                 self.last_velocity.y = self.velocity.y

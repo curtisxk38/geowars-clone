@@ -4,6 +4,7 @@ import player
 import colors
 import wall
 import camera
+import agent
 
 key_bindings_dict = {"LEFT": pygame.K_a,
                      "RIGHT": pygame.K_d,
@@ -60,18 +61,24 @@ class GameState(control.State):
                 mouse_list[0] -= self.my_camera.state.left
                 mouse_list[1] -= self.my_camera.state.top
                 self.my_player.shoot(mouse_list)
+            elif pygame.mouse.get_pressed()[2] == 1:
+                agent.WanderAgent(*pygame.mouse.get_pos())
 
     def update(self, screen):
         self.my_player.update()
         self.my_camera.update(self.my_player)
         for bullet in self.my_player.bullet_list:
             bullet.update()
+        for x in agent.agent_list:
+            x.update()
         # Draw
         screen.fill(colors.BLACK)
         for thing in self.all_sprites:
-            screen.blit(thing.image, self.my_camera.apply(thing))
+            screen.blit(thing.image, self.my_camera.apply(thing.rect))
         for bullet in self.my_player.bullet_list:
-            screen.blit(bullet.image, self.my_camera.apply(bullet))
+            screen.blit(bullet.image, self.my_camera.apply(bullet.rect))
+        for x in agent.agent_list:
+            pygame.draw.rect(screen, colors.RED, self.my_camera.apply(x.rect))
 
     def make_player_dict(self):
         player_dict = {key_bindings_dict["LEFT"]: "LEFT",
