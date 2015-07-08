@@ -69,8 +69,13 @@ class GameState(control.State):
         self.my_camera.update(self.my_player)
         for bullet in self.my_player.bullet_list:
             bullet.update()
+            if bullet.kill:
+                self.my_player.bullet_list.remove(bullet)
         for x in agent.agent_list:
             x.update()
+            if x.rect.collidelist(self.my_player.bullet_list) != -1:
+                agent.agent_list.remove(x)
+
         # Draw
         screen.fill(colors.BLACK)
         for thing in self.all_sprites:

@@ -127,9 +127,13 @@ class Bullet(pygame.sprite.Sprite):
         self.velocity = velocity
         self.rotate_center(self.find_angle())
 
+        self.kill = False
+
     def update(self):
         self.pos+=self.velocity
         self.rect.topleft = (self.pos.x, self.pos.y)
+        if self.rect.collidelist(wall.wall_list) != -1:
+            self.kill = True
 
     def find_angle(self):
         angle = 180+math.degrees(math.atan2(self.velocity.x, self.velocity.y))

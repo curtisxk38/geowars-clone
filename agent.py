@@ -1,6 +1,7 @@
 import pygame
 import math
 import random
+import wall
 
 agent_list = []
 
@@ -14,13 +15,15 @@ def get_truncate_vector(vector, limit):
 
 class Agent:
     def __init__(self, x, y):
+        agent_list.append(self)
+
         self.pos = pygame.math.Vector2(x, y)
         self.velocity = pygame.math.Vector2(0, 0)
 
         self.mass = 20
-        self.max_velocity = 5
+        self.max_velocity = 2.5
         self.max_force = 10
-        self.max_speed = 10
+        self.max_speed = 2.5
 
         # Wander
         self.w_angle = random.uniform(0, 2 * math.pi)
@@ -88,9 +91,46 @@ class WanderAgent(Agent):
         self.rect = pygame.Rect(0, 0, 16, 16)
         self.rect.center = (x, y)
 
-        agent_list.append(self)
+        self.max_velocity = 1.5
 
     def update(self):
-        self.agent_update(self.wander())
-        self.rect.centerx = self.pos.x
-        self.rect.centery = self.pos.y
+        steering = self.wander()
+        steering = get_truncate_vector(steering, self.max_force)
+        steering /= self.mass
+        self.velocity += steering
+        self.velocity = get_truncate_vector(self.velocity, self.max_speed)
+
+        self.move()
+
+        self.pos.x, self.pos.y = self.rect.center
+
+    def move(self):
+        # update each axis one at a time
+        if self.velocity.x != 0:
+            self.move_on_direction(self.velocity.x, 0)
+        if self.velocity.y != 0:
+            self.move_on_direction(0, self.velocity.y)
+
+    def move_on_direction(self, dx, dy):
+        self.rect.move_ip(dx, dy)
+        wall_collision = self.rect.collidelist(wall.wall_list)
+        if wall_collision != -1: # if there is a collision:
+            if dx > 0:
+                # moving right, hit left side of wall
+                self.rect.right = wall.wall_list[wall_collision].rect.left
+                self.velocity.x *= -1
+            if dx < 0:
+                # moving left, hit right side of wall
+                self.rect.left = wall.wall_list[wall_collision].rect.right
+                self.velocity.x *= -1
+            if dy > 0:
+                # moving down, hit top of wall
+                self.rect.bottom = wall.wall_list[wall_collision].rect.top
+                self.velocity.y *= -1
+            if dy < 0:
+                # moving up, hit bottom of wall
+                self.rect.top = wall.wall_list[wall_collision].rect.bottom
+                self.velocity.y *= -1
+            self.w_angle += (math.pi / 2)
+            if self.w_angle > 2* math.pi:
+                self.w_angle -= 2* math.pi
