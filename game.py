@@ -36,6 +36,7 @@ class GameState(control.State):
         self.all_sprites = pygame.sprite.Group(self.my_player, wall.wall_list)
 
         self.my_camera = camera.Camera(simple_camera, *TOTAL_LEVEL_SIZE)
+        self.spawner = agent.AgentSpawner((960, 480) , 80, 5)        
 
     def startup(self):
         load_key_bindings()
@@ -61,12 +62,12 @@ class GameState(control.State):
                 mouse_list[0] -= self.my_camera.state.left
                 mouse_list[1] -= self.my_camera.state.top
                 self.my_player.shoot(mouse_list)
-            elif pygame.mouse.get_pressed()[2] == 1:
-                agent.WanderAgent(*pygame.mouse.get_pos())
 
     def update(self, screen):
         self.my_player.update()
         self.my_camera.update(self.my_player)
+        self.spawner.update(self.my_player.pos)
+        
         for bullet in self.my_player.bullet_list:
             bullet.update()
             if bullet.kill:
