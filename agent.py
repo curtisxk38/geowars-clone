@@ -12,7 +12,36 @@ def get_truncate_vector(vector, limit):
         vector.y = limit
     return vector
 
+class AgentSpawner(level_size, safe_radius):
+	def __init__(self):
+		self.level_size = level_size
+		self.safe.rect = pygame.Rect(0, 0, safe_length/2.0, safe_length/2.0)
+		# Tick to start spawning at, tick last spawned, tick duration before spawning again, Agent type
+		self.spawn_list = {
+						[0, 0, 800, WanderAgent],
+						}
+		
+	def update(self, player_pos):
+		now = pygame.time.get_ticks()
+		for entry in self.spawn_list:
+			if entry[0] <= now and now - entry[1] > entry[2]:
+				self.spawn(entry[3], player_pos)
+				entry[2] = now
+	
+	def spawn(self, agent, player_pos):
+		x = random.randint(0, self.level_size[0])
+		y = random.randint(0, self.level_size[1])
+		self.safe_rect.center = (player_pos.x, player_pos.y)
+		if self.safe_rect.collidepoint(x, y):
+			if math.fabs(x - player_pos.x) > math.fabs(y - player_pos.y):
+				while self.safe_rect.collidepoint(x, y):
+					x += 10
+			else:
+				while self.safe_rect.collidepoint(x, y):
+					y += 10
+		agent(x, y)
 
+				
 class Agent:
     def __init__(self, x, y):
         agent_list.append(self)
