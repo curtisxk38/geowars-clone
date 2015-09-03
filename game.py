@@ -9,7 +9,9 @@ import agent
 key_bindings_dict = {"LEFT": pygame.K_a,
                      "RIGHT": pygame.K_d,
                      "UP": pygame.K_w,
-                     "DOWN": pygame.K_s}
+                     "DOWN": pygame.K_s,
+                     "AUTOFIRE": False,
+                     }
 
 SCREEN_SIZE = []
 TOTAL_LEVEL_SIZE = [720, 1080]
@@ -29,14 +31,15 @@ class GameState(control.State):
         self.pressed_keys = None
 
         SCREEN_SIZE.extend(pygame.display.get_surface().get_size())
-
+        self.now = 0
+        self.mouse_list = []
         self.my_player = player.Player(50, 50)
         self.player_pressed_dict = self.make_player_dict()
         self.make_level()
         self.all_sprites = pygame.sprite.Group(self.my_player, wall.wall_list)
 
         self.my_camera = camera.Camera(simple_camera, *TOTAL_LEVEL_SIZE)
-        self.spawner = agent.AgentSpawner((960, 480) , 80, 5)        
+        self.spawner = agent.AgentSpawner((960, 480) , 80, 10)        
 
     def startup(self):
         load_key_bindings()
@@ -53,20 +56,32 @@ class GameState(control.State):
             self.my_player.key_pressed[self.player_pressed_dict[key]] = self.pressed_keys[key]
         if event.type == pygame.KEYDOWN:
             self.my_player.recently_pressed = self.player_pressed_dict.get(event.key)
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if event.type == pygame.MOUSEBUTTONDOWN:                	
             # get_pressed() returns a tuple with booleans
             # for (leftclick, mwheelclick, rightclick)
             if pygame.mouse.get_pressed()[0] == 1:
-                mouse_list = []
-                mouse_list.extend(pygame.mouse.get_pos())
-                mouse_list[0] -= self.my_camera.state.left
-                mouse_list[1] -= self.my_camera.state.top
-                self.my_player.shoot(mouse_list)
-
+                self.my_player.shoot(self.mouse_list)
+    
+    def update_mouse_list(self):
+        del self.mouse_list[:]
+        self.mouse_list.extend(pygame.mouse.get_pos())
+        self.mouse_list[0] -= self.my_camera.state.left
+        self.mouse_list[1] -= self.my_camera.state.top
+    
+    def autofire(self):
+        if key_bindings_dict["AUTOFIRE"] and self.now - self.my_player.autofire_last >= self.my_player.autofire_timer:
+            self.my_player.shoot(self.mouse_list)
+            self.my_player.autofire_last = self.now
+    
     def update(self, screen):
+        self.now = pygame.time.get_ticks()
+        
+        self.update_mouse_list()
+        self.autofire()
+    
         self.my_player.update()
         self.my_camera.update(self.my_player)
-        self.spawner.update(self.my_player.pos)
+        self.spawner.update(self.now, self.my_player.pos)
         
         for bullet in self.my_player.bullet_list:
             bullet.update()
@@ -84,7 +99,7 @@ class GameState(control.State):
         for bullet in self.my_player.bullet_list:
             screen.blit(bullet.image, self.my_camera.apply(bullet.rect))
         for x in agent.agent_list:
-            pygame.draw.rect(screen, colors.RED, self.my_camera.apply(x.rect))
+            screen.blit(x.image, self.my_camera.apply(x.rect))
 
     def make_player_dict(self):
         player_dict = {key_bindings_dict["LEFT"]: "LEFT",

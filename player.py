@@ -12,7 +12,10 @@ class Player(pygame.sprite.Sprite):
         self.image.convert()
         self.original_image = self.image
         self.rect = self.image.get_rect()
-
+        
+        self.autofire_timer = 90
+        self.autofire_last = 0
+	   
         self.max_velocity = 4
         self.pos = pygame.math.Vector2(x, y)
         self.velocity = pygame.math.Vector2(0, 0)
@@ -111,7 +114,7 @@ class Player(pygame.sprite.Sprite):
         difference.scale_to_length(self.PROJECTILE_SPEED)
         # No copy() method of pygame.math.Vector2 ??
         # Guess I'll do it like below
-        copy_of_pos = pygame.math.Vector2(self.pos.x, self.pos.y)
+        copy_of_pos = pygame.math.Vector2(self.rect.centerx, self.rect.centery)
         self.bullet_list.append(Bullet(copy_of_pos, difference))
 
 
@@ -131,7 +134,7 @@ class Bullet(pygame.sprite.Sprite):
 
     def update(self):
         self.pos+=self.velocity
-        self.rect.topleft = (self.pos.x, self.pos.y)
+        self.rect.center = self.pos.x, self.pos.y
         if self.rect.collidelist(wall.wall_list) != -1:
             self.kill = True
 
