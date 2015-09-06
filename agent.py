@@ -6,6 +6,8 @@ import wall
 
 agent_list = []
 
+
+
 def get_truncate_vector(vector, limit):
     if vector.x > limit:
         vector.x = limit
@@ -20,12 +22,12 @@ class AgentSpawner():
 		self.agent_limit = agent_limit
 		# Tick to start spawning at, tick last spawned, tick duration before spawning again, Agent type
 		self.spawn_list = [
-						[0, 0, 1000, WanderAgent],
+						[0, 0, 800, WanderAgent],
+						[0, 0, 1000, SeekAgent],
 						]
 		
 	def update(self, now, player_pos):
 		if len(agent_list) < self.agent_limit:
-			#now = pygame.time.get_ticks()
 			for entry in self.spawn_list:
 				if entry[0] <= now and now - entry[1] > entry[2]:
 					self.spawn(entry[3], player_pos)
@@ -73,8 +75,11 @@ class Agent:
     def seek(self, target):
         # target is a vector
         desired_velocity = target - self.pos
-        desired_velocity.scale_to_length(self.max_velocity)
-        desired_velocity -= self.velocity
+        try:
+            desired_velocity.scale_to_length(self.max_velocity)
+            desired_velocity -= self.velocity
+        except ValueError:
+            pass
         return desired_velocity
 
     def flee(self, target):
@@ -120,14 +125,17 @@ class Agent:
 class WanderAgent(Agent):
     def __init__(self, x , y):
         Agent.__init__(self, x, y)
-        self.image = pygame.image.load(os.path.join("data", "wander.bmp"))
+        #self.image = pygame.image.load(os.path.join("data", "wander.bmp"))
+        surface = pygame.Surface((16,16))
+        surface.fill((255,0,0))
+        self.image = surface
         self.image.convert()
         self.rect = self.image.get_rect()#pygame.Rect(0, 0, 16, 16)
         self.rect.center = (x, y)
 
         self.max_velocity = 1.5
 
-    def update(self):
+    def update(self, player):
         steering = self.wander()
         steering = get_truncate_vector(steering, self.max_force)
         steering /= self.mass
@@ -168,3 +176,58 @@ class WanderAgent(Agent):
             self.w_angle += (math.pi / 2)
             if self.w_angle > 2* math.pi:
                 self.w_angle -= 2* math.pi
+                
+class SeekAgent(Agent):
+    def __init__(self, x , y):
+        Agent.__init__(self, x, y)
+        
+        surface = pygame.Surface((16,16))
+        surface.fill((0,255,0))
+        self.image = surface 
+        self.image.convert()
+        self.rect = self.image.get_rect()#pygame.Rect(0, 0, 16, 16)
+        self.rect.center = (x, y)
+
+        self.max_velocity = 4
+        self.max_force = 8.0
+
+    def update(self, player):
+        steering = self.seek(player.pos)
+        steering = get_truncate_vector(steering, self.max_force)
+        steering /= self.mass
+        self.velocity += steering
+        self.velocity = get_truncate_vector(self.velocity, self.max_speed)
+
+        self.move()
+
+        self.pos.x, self.pos.y = self.rect.center
+   
+    def move(self):
+        # update each axis one at a time
+        if self.velocity.x != 0:
+            self.move_on_direction(self.velocity.x, 0)
+        if self.velocity.y != 0:
+            self.move_on_direction(0, self.velocity.y)
+
+    def move_on_direction(self, dx, dy):
+        self.rect.move_ip(dx, dy)
+        wall_collision = self.rect.collidelist(wall.wall_list)
+        if wall_collision != -1: # if there is a collision:
+            if dx > 0:
+                # moving right, hit left side of wall
+                self.rect.right = wall.wall_list[wall_collision].rect.left
+                self.velocity.x *= -1
+            if dx < 0:
+                # moving left, hit right side of wall
+                self.rect.left = wall.wall_list[wall_collision].rect.right
+                self.velocity.x *= -1
+            if dy > 0:
+                # moving down, hit top of wall
+                self.rect.bottom = wall.wall_list[wall_collision].rect.top
+                self.velocity.y *= -1
+            if dy < 0:
+                # moving up, hit bottom of wall
+                self.rect.top = wall.wall_list[wall_collision].rect.bottom
+                self.velocity.y *= -1
+                
+

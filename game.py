@@ -39,7 +39,7 @@ class GameState(control.State):
         self.all_sprites = pygame.sprite.Group(self.my_player, wall.wall_list)
 
         self.my_camera = camera.Camera(simple_camera, *TOTAL_LEVEL_SIZE)
-        self.spawner = agent.AgentSpawner((960, 480) , 80, 10)        
+        self.spawner = agent.AgentSpawner((960, 480) , 80, 20)        
 
     def startup(self):
         load_key_bindings()
@@ -88,10 +88,11 @@ class GameState(control.State):
             if bullet.kill:
                 self.my_player.bullet_list.remove(bullet)
         for x in agent.agent_list:
-            x.update()
-            if x.rect.collidelist(self.my_player.bullet_list) != -1:
+            x.update(self.my_player)
+            collision = x.rect.collidelist(self.my_player.bullet_list)
+            if  collision != -1:
                 agent.agent_list.remove(x)
-
+                self.my_player.bullet_list.pop(collision)
         # Draw
         screen.fill(colors.BLACK)
         for thing in self.all_sprites:

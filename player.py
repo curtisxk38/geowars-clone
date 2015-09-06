@@ -13,7 +13,7 @@ class Player(pygame.sprite.Sprite):
         self.original_image = self.image
         self.rect = self.image.get_rect()
         
-        self.autofire_timer = 90
+        self.autofire_timer = 1
         self.autofire_last = 0
 	   
         self.max_velocity = 4
