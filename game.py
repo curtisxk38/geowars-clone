@@ -10,7 +10,7 @@ key_bindings_dict = {"LEFT": pygame.K_a,
                      "RIGHT": pygame.K_d,
                      "UP": pygame.K_w,
                      "DOWN": pygame.K_s,
-                     "AUTOFIRE": False,
+                     "AUTOFIRE": True,
                      }
 
 SCREEN_SIZE = []
@@ -28,30 +28,49 @@ def simple_camera(camera_used, target_rect):
 class GameState(control.State):
     def __init__(self):
         control.State.__init__(self)
+        self.next = "scores"
+        
         self.pressed_keys = None
-
         SCREEN_SIZE.extend(pygame.display.get_surface().get_size())
-        self.now = 0
+        self.font = pygame.font.Font('freesansbold.ttf', 16)
+        
+        self.my_player = None
         self.mouse_list = []
-        self.my_player = player.Player(50, 50)
-        self.player_pressed_dict = self.make_player_dict()
         self.make_level()
-        self.all_sprites = pygame.sprite.Group(self.my_player, wall.wall_list)
+        self.all_sprites = pygame.sprite.Group(wall.wall_list)
+        
+        self.life = 5
+        self.life_text = None
+        self.life_text_rect = pygame.Rect(40, SCREEN_SIZE[1] - 40, 16, 16)
+        
+        self.score = 0
+        self.score_text = None
+        self.score_text_rect = pygame.Rect(SCREEN_SIZE[0] - 40, SCREEN_SIZE[1] - 40, 16, 50)
 
         self.my_camera = camera.Camera(simple_camera, *TOTAL_LEVEL_SIZE)
         self.spawner = agent.AgentSpawner((960, 480) , 80, 20)        
 
     def startup(self):
+        self.now = 0
+        self.life = 5
+        self.score = 0
+        
         load_key_bindings()
         self.player_pressed_dict = self.make_player_dict()
+        self.update_life_text()
+        self.update_score_text()
+        
+        self.my_player = player.Player(50, 50)
+        self.all_sprites.add(self.my_player)
 
     def cleanup(self):
-        pass
+        self.all_sprites.remove(self.my_player)
+        agent.agent_list.clear()
 
     def get_event(self, event):
         self.pressed_keys = pygame.key.get_pressed()
         if self.pressed_keys[pygame.K_ESCAPE]:
-            self.quit = True
+            self.done = True
         for key in self.player_pressed_dict:
             self.my_player.key_pressed[self.player_pressed_dict[key]] = self.pressed_keys[key]
         if event.type == pygame.KEYDOWN:
@@ -59,9 +78,14 @@ class GameState(control.State):
         if event.type == pygame.MOUSEBUTTONDOWN:                	
             # get_pressed() returns a tuple with booleans
             # for (leftclick, mwheelclick, rightclick)
-            if pygame.mouse.get_pressed()[0] == 1:
+            if pygame.mouse.get_pressed()[0] == 1 and not key_bindings_dict["AUTOFIRE"]:
                 self.my_player.shoot(self.mouse_list)
-    
+                
+    def update_life_text(self):
+        self.life_text = self.font.render(str(self.life), True, colors.WHITE)
+    def update_score_text(self):
+        self.score_text = self.font.render(str(self.score), True, colors.WHITE)
+     
     def update_mouse_list(self):
         del self.mouse_list[:]
         self.mouse_list.extend(pygame.mouse.get_pos())
@@ -89,10 +113,16 @@ class GameState(control.State):
                 self.my_player.bullet_list.remove(bullet)
         for x in agent.agent_list:
             x.update(self.my_player)
+            if x.rect.colliderect(self.my_player.rect):
+                agent.agent_list.remove(x)
+                self.life -= 1
+                self.update_life_text()
             collision = x.rect.collidelist(self.my_player.bullet_list)
             if  collision != -1:
                 agent.agent_list.remove(x)
                 self.my_player.bullet_list.pop(collision)
+                self.score += 1
+                self.update_score_text()
         # Draw
         screen.fill(colors.BLACK)
         for thing in self.all_sprites:
@@ -101,6 +131,8 @@ class GameState(control.State):
             screen.blit(bullet.image, self.my_camera.apply(bullet.rect))
         for x in agent.agent_list:
             screen.blit(x.image, self.my_camera.apply(x.rect))
+        screen.blit(self.score_text, self.score_text_rect)
+        screen.blit(self.life_text, self.life_text_rect)
 
     def make_player_dict(self):
         player_dict = {key_bindings_dict["LEFT"]: "LEFT",

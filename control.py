@@ -32,6 +32,10 @@ class Control():
         previous, self.state_name = self.state_name, self.state.next
         self.state.cleanup()
         self.state = self.state_dict[self.state_name]
+        # before doing anything else, get score from game state, and send to scores state
+        # probably a better way to do this
+        if previous == "game" and self.state_name == "scores":
+            self.state_dict[self.state_name].receive_recent_score(self.state_dict[previous].score)
         self.state.startup()
         self.state.previous = previous
 

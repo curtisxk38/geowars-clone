@@ -38,6 +38,14 @@ class AgentSpawner():
 		y = random.randint(30, self.level_size[1] - 30)
 		self.safe_rect.center = (player_pos.x, player_pos.y)
 		if self.safe_rect.collidepoint(x, y):
+			# This is actually bad code
+			# Maybe later, replace it with a better way of moving the coordinates x, y
+			#   outside of the safe rect
+			
+			# This actually is even worse than bad, it has a bug
+			# If the player is near/touching the wall of the map,
+			# the spawner might try to spawn on the player then this code will occur
+			# and it will move the spawn location outside of the walls of the map
 			if math.fabs(x - player_pos.x) > math.fabs(y - player_pos.y):
 				while self.safe_rect.collidepoint(x, y):
 					x += 10

@@ -1,8 +1,10 @@
 import pygame
 import os
+import sys
 import control
 import game
-import sys
+import menu
+import scores
 
 def main():
     os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -15,11 +17,13 @@ def main():
     pygame.display.set_mode(SCREEN_SIZE)
     pygame.display.set_caption("Geowars Clone")
 
-    state_dict = {"game": game.GameState(),
+    state_dict = {"menu": menu.MenuState(),
+                  "game": game.GameState(),
+                  "scores": scores.ScoresState(),
                   }
-
+    
     game_control = control.Control(1000.0 / DESIRED_FPS)
-    game_control.setup_states(state_dict, "game")
+    game_control.setup_states(state_dict, "menu")
     game_control.main()
     pygame.quit()
     sys.exit()
