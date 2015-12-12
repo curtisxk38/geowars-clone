@@ -3,6 +3,7 @@ import math
 import random
 import os
 import wall
+import colors
 
 agent_list = []
 
@@ -16,18 +17,23 @@ def get_truncate_vector(vector, limit):
     return vector
 
 class AgentSpawner():
-	def __init__(self, level_size, safe_length, agent_limit):
+	def __init__(self, level_size, safe_length):
 		self.level_size = level_size
 		self.safe_rect = pygame.Rect(0, 0, safe_length, safe_length)
-		self.agent_limit = agent_limit
 		# Tick to start spawning at, tick last spawned, tick duration before spawning again, Agent type
 		self.spawn_list = [
 						[0, 0, 800, WanderAgent],
 						[0, 0, 1000, SeekAgent],
 						]
+	
+	def agent_limit(self, score):
+		agent_limit = 20
+		if(score > 100):
+			agent_limit += (score - 100) / 20
+		return agent_limit
 		
-	def update(self, now, player_pos):
-		if len(agent_list) < self.agent_limit:
+	def update(self, now, player_pos, score):
+		if len(agent_list) < self.agent_limit(score):
 			for entry in self.spawn_list:
 				if entry[0] <= now and now - entry[1] > entry[2]:
 					self.spawn(entry[3], player_pos)
@@ -238,4 +244,3 @@ class SeekAgent(Agent):
                 self.rect.top = wall.wall_list[wall_collision].rect.bottom
                 self.velocity.y *= -1
                 
-

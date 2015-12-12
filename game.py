@@ -48,7 +48,7 @@ class GameState(control.State):
         self.score_text_rect = pygame.Rect(SCREEN_SIZE[0] - 40, SCREEN_SIZE[1] - 40, 16, 50)
 
         self.my_camera = camera.Camera(simple_camera, *TOTAL_LEVEL_SIZE)
-        self.spawner = agent.AgentSpawner((960, 480) , 80, 20)        
+        self.spawner = agent.AgentSpawner((960, 480) , 80)        
 
     def startup(self):
         self.now = 0
@@ -105,7 +105,7 @@ class GameState(control.State):
     
         self.my_player.update()
         self.my_camera.update(self.my_player)
-        self.spawner.update(self.now, self.my_player.pos)
+        self.spawner.update(self.now, self.my_player.pos, self.score)
         
         for bullet in self.my_player.bullet_list:
             bullet.update()
@@ -117,12 +117,13 @@ class GameState(control.State):
                 agent.agent_list.remove(x)
                 self.life -= 1
                 self.update_life_text()
-            collision = x.rect.collidelist(self.my_player.bullet_list)
-            if  collision != -1:
-                agent.agent_list.remove(x)
-                self.my_player.bullet_list.pop(collision)
-                self.score += 1
-                self.update_score_text()
+            else:
+                collision = x.rect.collidelist(self.my_player.bullet_list)
+                if  collision != -1:
+                    agent.agent_list.remove(x)
+                    self.my_player.bullet_list.pop(collision)
+                    self.score += 1
+                    self.update_score_text()
         # Draw
         screen.fill(colors.BLACK)
         for thing in self.all_sprites:
@@ -133,6 +134,8 @@ class GameState(control.State):
             screen.blit(x.image, self.my_camera.apply(x.rect))
         screen.blit(self.score_text, self.score_text_rect)
         screen.blit(self.life_text, self.life_text_rect)
+        if self.life <= 0:
+            self.done = True
 
     def make_player_dict(self):
         player_dict = {key_bindings_dict["LEFT"]: "LEFT",
