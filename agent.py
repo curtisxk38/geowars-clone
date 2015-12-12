@@ -17,50 +17,50 @@ def get_truncate_vector(vector, limit):
     return vector
 
 class AgentSpawner():
-	def __init__(self, level_size, safe_length):
-		self.level_size = level_size
-		self.safe_rect = pygame.Rect(0, 0, safe_length, safe_length)
-		# Tick to start spawning at, tick last spawned, tick duration before spawning again, Agent type
-		self.spawn_list = [
-						[0, 0, 800, WanderAgent],
-						[0, 0, 1000, SeekAgent],
-						]
-	
-	def agent_limit(self, score):
-		agent_limit = 20
-		if(score > 100):
-			agent_limit += (score - 100) / 20
-		return agent_limit
-		
-	def update(self, now, player_pos, score):
-		if len(agent_list) < self.agent_limit(score):
-			for entry in self.spawn_list:
-				if entry[0] <= now and now - entry[1] > entry[2]:
-					self.spawn(entry[3], player_pos)
-					entry[1] = now
-	
-	def spawn(self, agent, player_pos):
-		x = random.randint(30, self.level_size[0] - 30)
-		y = random.randint(30, self.level_size[1] - 30)
-		self.safe_rect.center = (player_pos.x, player_pos.y)
-		if self.safe_rect.collidepoint(x, y):
-			# This is actually bad code
-			# Maybe later, replace it with a better way of moving the coordinates x, y
-			#   outside of the safe rect
-			
-			# This actually is even worse than bad, it has a bug
-			# If the player is near/touching the wall of the map,
-			# the spawner might try to spawn on the player then this code will occur
-			# and it will move the spawn location outside of the walls of the map
-			if math.fabs(x - player_pos.x) > math.fabs(y - player_pos.y):
-				while self.safe_rect.collidepoint(x, y):
-					x += 10
-			else:
-				while self.safe_rect.collidepoint(x, y):
-					y += 10
-		agent(x, y)
+    def __init__(self, level_size, safe_length):
+        self.level_size = level_size
+        self.safe_rect = pygame.Rect(0, 0, safe_length, safe_length)
+        # Tick to start spawning at, tick last spawned, tick duration before spawning again, Agent type
+        self.spawn_list = [
+                                        [0, 0, 800, WanderAgent],
+                                        [0, 0, 1000, SeekAgent],
+                                        ]
 
-				
+    def agent_limit(self, score):
+        agent_limit = 20
+        if(score > 100):
+            agent_limit += (score - 100) / 20
+        return agent_limit
+
+    def update(self, now, player_pos, score):
+        if len(agent_list) < self.agent_limit(score):
+            for entry in self.spawn_list:
+                if entry[0] <= now and now - entry[1] > entry[2]:
+                    self.spawn(entry[3], player_pos)
+                    entry[1] = now
+
+    def spawn(self, agent, player_pos):
+        x = random.randint(30, self.level_size[0] - 30)
+        y = random.randint(30, self.level_size[1] - 30)
+        self.safe_rect.center = (player_pos.x, player_pos.y)
+        if self.safe_rect.collidepoint(x, y):
+            # This is actually bad code
+            # Maybe later, replace it with a better way of moving the coordinates x, y
+            #   outside of the safe rect
+
+            # This actually is even worse than bad, it has a bug
+            # If the player is near/touching the wall of the map,
+            # the spawner might try to spawn on the player then this code will occur
+            # and it will move the spawn location outside of the walls of the map
+            if math.fabs(x - player_pos.x) > math.fabs(y - player_pos.y):
+                while self.safe_rect.collidepoint(x, y):
+                    x += 10
+            else:
+                while self.safe_rect.collidepoint(x, y):
+                    y += 10
+        agent(x, y)
+
+
 class Agent:
     def __init__(self, x, y):
         agent_list.append(self)
@@ -172,7 +172,7 @@ class WanderAgent(Agent):
         wall_collision = self.rect.collidelist(wall.wall_list)
         if wall_collision != -1: # if there is a collision:
             if dx > 0:
-                # moving right, hit left side of wall
+        # moving right, hit left side of wall
                 self.rect.right = wall.wall_list[wall_collision].rect.left
                 self.velocity.x *= -1
             if dx < 0:
@@ -190,14 +190,14 @@ class WanderAgent(Agent):
             self.w_angle += (math.pi / 2)
             if self.w_angle > 2* math.pi:
                 self.w_angle -= 2* math.pi
-                
+
 class SeekAgent(Agent):
     def __init__(self, x , y):
         Agent.__init__(self, x, y)
-        
+
         surface = pygame.Surface((16,16))
         surface.fill((0,255,0))
-        self.image = surface 
+        self.image = surface
         self.image.convert()
         self.rect = self.image.get_rect()#pygame.Rect(0, 0, 16, 16)
         self.rect.center = (x, y)
@@ -215,7 +215,7 @@ class SeekAgent(Agent):
         self.move()
 
         self.pos.x, self.pos.y = self.rect.center
-   
+
     def move(self):
         # update each axis one at a time
         if self.velocity.x != 0:
@@ -243,4 +243,3 @@ class SeekAgent(Agent):
                 # moving up, hit bottom of wall
                 self.rect.top = wall.wall_list[wall_collision].rect.bottom
                 self.velocity.y *= -1
-                

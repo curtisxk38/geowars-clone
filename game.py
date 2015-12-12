@@ -5,19 +5,10 @@ import colors
 import wall
 import camera
 import agent
-
-key_bindings_dict = {"LEFT": pygame.K_a,
-                     "RIGHT": pygame.K_d,
-                     "UP": pygame.K_w,
-                     "DOWN": pygame.K_s,
-                     "AUTOFIRE": True,
-                     }
+import pickle
 
 SCREEN_SIZE = []
 TOTAL_LEVEL_SIZE = [720, 1080]
-
-def load_key_bindings():
-    pass
 
 def simple_camera(camera_used, target_rect):
     x, y, _, _, = target_rect
@@ -29,39 +20,53 @@ class GameState(control.State):
     def __init__(self):
         control.State.__init__(self)
         self.next = "scores"
-        
+
+        self.key_bindings_dict = {}
         self.pressed_keys = None
         SCREEN_SIZE.extend(pygame.display.get_surface().get_size())
         self.font = pygame.font.Font('freesansbold.ttf', 16)
-        
+
         self.my_player = None
         self.mouse_list = []
         self.make_level()
         self.all_sprites = pygame.sprite.Group(wall.wall_list)
-        
+
         self.life = 5
         self.life_text = None
         self.life_text_rect = pygame.Rect(40, SCREEN_SIZE[1] - 40, 16, 16)
-        
+
         self.score = 0
         self.score_text = None
         self.score_text_rect = pygame.Rect(SCREEN_SIZE[0] - 40, SCREEN_SIZE[1] - 40, 16, 50)
 
         self.my_camera = camera.Camera(simple_camera, *TOTAL_LEVEL_SIZE)
-        self.spawner = agent.AgentSpawner((960, 480) , 80)        
+        self.spawner = agent.AgentSpawner((960, 480) , 80)
 
     def startup(self):
         self.now = 0
         self.life = 5
         self.score = 0
-        
-        load_key_bindings()
+
+        self.key_bindings_dict = self.load_key_bindings()
         self.player_pressed_dict = self.make_player_dict()
         self.update_life_text()
         self.update_score_text()
-        
+
         self.my_player = player.Player(50, 50)
         self.all_sprites.add(self.my_player)
+        
+    def load_key_bindings(self):
+        try:
+            key_bindings_dict = pickle.load(open("keybindings.pkl", "rb"))
+        except FileNotFoundError:
+            key_bindings_dict = {"LEFT": pygame.K_a,
+                                 "RIGHT": pygame.K_d,
+                                 "UP": pygame.K_w,
+                                 "DOWN": pygame.K_s,
+                                 "AUTOFIRE": True,
+                                 }
+        pickle.dump(key_bindings_dict, open("keybindings.pkl", "wb"))
+        return key_bindings_dict
 
     def cleanup(self):
         self.all_sprites.remove(self.my_player)
@@ -75,38 +80,38 @@ class GameState(control.State):
             self.my_player.key_pressed[self.player_pressed_dict[key]] = self.pressed_keys[key]
         if event.type == pygame.KEYDOWN:
             self.my_player.recently_pressed = self.player_pressed_dict.get(event.key)
-        if event.type == pygame.MOUSEBUTTONDOWN:                	
+        if event.type == pygame.MOUSEBUTTONDOWN:
             # get_pressed() returns a tuple with booleans
             # for (leftclick, mwheelclick, rightclick)
             if pygame.mouse.get_pressed()[0] == 1 and not key_bindings_dict["AUTOFIRE"]:
                 self.my_player.shoot(self.mouse_list)
-                
+
     def update_life_text(self):
         self.life_text = self.font.render(str(self.life), True, colors.WHITE)
     def update_score_text(self):
         self.score_text = self.font.render(str(self.score), True, colors.WHITE)
-     
+
     def update_mouse_list(self):
         del self.mouse_list[:]
         self.mouse_list.extend(pygame.mouse.get_pos())
         self.mouse_list[0] -= self.my_camera.state.left
         self.mouse_list[1] -= self.my_camera.state.top
-    
+
     def autofire(self):
-        if key_bindings_dict["AUTOFIRE"] and self.now - self.my_player.autofire_last >= self.my_player.autofire_timer:
+        if self.key_bindings_dict["AUTOFIRE"] and self.now - self.my_player.autofire_last >= self.my_player.autofire_timer:
             self.my_player.shoot(self.mouse_list)
             self.my_player.autofire_last = self.now
-    
+
     def update(self, screen):
         self.now = pygame.time.get_ticks()
-        
+
         self.update_mouse_list()
         self.autofire()
-    
+
         self.my_player.update()
         self.my_camera.update(self.my_player)
         self.spawner.update(self.now, self.my_player.pos, self.score)
-        
+
         for bullet in self.my_player.bullet_list:
             bullet.update()
             if bullet.kill:
@@ -138,10 +143,10 @@ class GameState(control.State):
             self.done = True
 
     def make_player_dict(self):
-        player_dict = {key_bindings_dict["LEFT"]: "LEFT",
-                       key_bindings_dict["RIGHT"]: "RIGHT",
-                       key_bindings_dict["UP"]: "UP",
-                       key_bindings_dict["DOWN"]: "DOWN"}
+        player_dict = {self.key_bindings_dict["LEFT"]: "LEFT",
+                       self.key_bindings_dict["RIGHT"]: "RIGHT",
+                       self.key_bindings_dict["UP"]: "UP",
+                       self.key_bindings_dict["DOWN"]: "DOWN"}
         return player_dict
 
     def make_level(self):

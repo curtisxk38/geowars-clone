@@ -9,7 +9,7 @@ class MenuState(control.State):
         control.State.__init__(self)
         self.next = "game"
         self.button_list = []
-        
+
         self.background_color = colors.BLACK
         self.button_color = colors.WHITE
 

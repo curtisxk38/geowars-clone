@@ -21,7 +21,7 @@ def main():
                   "game": game.GameState(),
                   "scores": scores.ScoresState(),
                   }
-    
+
     game_control = control.Control(1000.0 / DESIRED_FPS)
     game_control.setup_states(state_dict, "menu")
     game_control.main()

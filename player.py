@@ -12,10 +12,10 @@ class Player(pygame.sprite.Sprite):
         self.image.convert()
         self.original_image = self.image
         self.rect = self.image.get_rect()
-        
+
         self.autofire_timer = 120
         self.autofire_last = 0
-	   
+
         self.max_velocity = 4
         self.pos = pygame.math.Vector2(x, y)
         self.velocity = pygame.math.Vector2(0, 0)
@@ -147,4 +147,3 @@ class Bullet(pygame.sprite.Sprite):
         rotated_image = pygame.transform.rotate(self.original_image, angle)
         self.image = rotated_image
         self.rect = self.image.get_rect()
-
