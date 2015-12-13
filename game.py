@@ -31,7 +31,7 @@ class GameState(control.State):
         self.make_level()
         self.all_sprites = pygame.sprite.Group(wall.wall_list)
 
-        self.life = 5
+        self.life = 3
         self.life_text = None
         self.life_text_rect = pygame.Rect(40, SCREEN_SIZE[1] - 40, 16, 16)
 
@@ -44,7 +44,7 @@ class GameState(control.State):
 
     def startup(self):
         self.now = 0
-        self.life = 5
+        self.life = 3
         self.score = 0
 
         self.key_bindings_dict = self.load_key_bindings()
