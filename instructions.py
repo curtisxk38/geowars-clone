@@ -12,7 +12,8 @@ class InstructionsState(control.State):
     def __init__(self):
         control.State.__init__(self)
         self.next = "menu"
-        self.buttonlist = [self.make_menu_button()]
+        self.key_buttons = []
+        self.menu_button = self.make_menu_button()
         self.key_bindings = None
         self.font = pygame.font.Font('freesansbold.ttf', 20)
         self.text = []
@@ -24,6 +25,8 @@ class InstructionsState(control.State):
         
         self.load_keybindings()
         self.make_key_func()
+        
+        self.key_list = ["LEFT","RIGHT","UP","DOWN"]
 
     def make_menu_button(self):
         rect = pygame.Rect(0, 0, 80, 20)
@@ -32,76 +35,41 @@ class InstructionsState(control.State):
         return my_button
 
     def make_text(self):
-        left = self.font.render("Move Left: ", True, BLACK)
-        left_rect = left.get_rect()
-        left_rect.topleft = (40, 200)
-        self.text.append((left, left_rect))
-
-        right = self.font.render("Move Right: ", True, BLACK)
-        right_rect = right.get_rect()
-        right_rect.topleft = (40, 240)
-        self.text.append((right, right_rect))
-
-        up = self.font.render("Move Up: ", True, BLACK)
-        up_rect = up.get_rect()
-        up_rect.topleft = (40, 280)
-        self.text.append((up, up_rect))
-
-        down = self.font.render("Move Down: ", True, BLACK)
-        down_rect = down.get_rect()
-        down_rect.topleft = (40, 320)
-        self.text.append((down, down_rect))
+        for i in range(4):
+            text = self.font.render("Move " + self.key_list[i] + ": ", True, BLACK)
+            rect = text.get_rect()
+            rect.topleft = (40, 200 + i * 40)
+            self.text.append((text, rect))
     
     def make_key_func(self):
-        d = {1: "LEFT", 2: "RIGHT", 3: "UP", 4: "DOWN"}
         def make(i):
             def a():
                 if not self.waiting_for_key:
                     self.waiting_for_key = True
                     self.pressed_button_index = i
-                    self.buttonlist[i].text = "___"
-                    self.buttonlist[i].render_text()
+                    self.key_buttons[i].text = "___"
+                    self.key_buttons[i].render_text()
                 elif self.waiting_for_key and self.pressed_button_index == i:
                     self.waiting_for_key = False
-                    self.buttonlist[i].text = pygame.key.name(self.key_bindings[d[i]])
-                    self.buttonlist[i].render_text()
+                    self.key_buttons[i].text = pygame.key.name(self.key_bindings[self.key_list[i]])
+                    self.key_buttons[i].render_text()
             return a
             
         for i in range(4):
-            index = i + 1
+            index = i
             b = make(index)
             self.key_func.append(b)
 
     def bind_key(self, key):
-        if self.pressed_button_index == 1:
-            self.key_bindings["LEFT"] = key
-            self.key_func[0]()
-        elif self.pressed_button_index == 2:
-            self.key_bindings["RIGHT"] = key
-            self.key_func[1]()
-        elif self.pressed_button_index == 3:
-            self.key_bindings["UP"] = key
-            self.key_func[2]()
-        elif self.pressed_button_index == 4:
-            self.key_bindings["DOWN"] = key
-            self.key_func[3]()
+        for i in range(4):
+            if self.pressed_button_index == i:
+                self.key_bindings[self.key_list[i]] = key
+                self.key_func[i]()
 
     def make_key_buttons(self):
-        left_rect = pygame.Rect(0, 0, 60, 20)
-        left_rect.topleft = (180, 200)
-        self.buttonlist.append(button.Button(left_rect, pygame.key.name(self.key_bindings["LEFT"]), BLACK, 15, self.key_func[0]))
-
-        right_rect = pygame.Rect(0, 0, 60, 20)
-        right_rect.topleft = (180, 240)
-        self.buttonlist.append(button.Button(right_rect, pygame.key.name(self.key_bindings["RIGHT"]), BLACK, 15, self.key_func[1]))
-        
-        up_rect = pygame.Rect(0, 0, 60, 20)
-        up_rect.topleft = (180, 280)
-        self.buttonlist.append(button.Button(up_rect, pygame.key.name(self.key_bindings["UP"]), BLACK, 15, self.key_func[2]))
-        
-        down_rect = pygame.Rect(0, 0, 60, 20)
-        down_rect.topleft = (180, 320)
-        self.buttonlist.append(button.Button(down_rect, pygame.key.name(self.key_bindings["DOWN"]), BLACK, 15, self.key_func[3]))
+        for i in range(4):
+            rect = pygame.Rect(180, 200 + i * 40, 60, 20)
+            self.key_buttons.append(button.Button(rect, pygame.key.name(self.key_bindings[self.key_list[i]]), BLACK, 15, self.key_func[i]))
 
     def load_keybindings(self):
         try:
@@ -121,18 +89,19 @@ class InstructionsState(control.State):
         self.load_keybindings()
         if not self.text:
             self.make_text()
-        if len(self.buttonlist) < 4:
+        if len(self.key_buttons) == 0:
             self.make_key_buttons()
 
     def cleanup(self):
         pickle.dump(self.key_bindings, open("keybindings.pkl", "wb"))
-        del self.buttonlist[1:]
+        self.key_buttons.clear()
         self.waiting_for_key = False
 
     def get_event(self, event):
         self.pressed_keys = pygame.key.get_pressed()
-        for button in self.buttonlist:
+        for button in self.key_buttons:
             button.get_event(event)
+        self.menu_button.get_event(event)
         if self.pressed_keys[pygame.K_ESCAPE]:
             self.done = True
         if self.waiting_for_key and event.type == pygame.KEYDOWN:
@@ -140,7 +109,8 @@ class InstructionsState(control.State):
 
     def update(self, screen):
         screen.fill((255, 255, 255))
-        for button in self.buttonlist:
+        for button in self.key_buttons:
             button.update(screen)
+        self.menu_button.update(screen)
         for i in self.text:
             screen.blit(*i)
