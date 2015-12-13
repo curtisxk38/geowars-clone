@@ -5,6 +5,7 @@ import control
 import game
 import menu
 import scores
+import instructions
 
 def main():
     os.environ['SDL_VIDEO_CENTERED'] = '1'
@@ -20,6 +21,7 @@ def main():
     state_dict = {"menu": menu.MenuState(),
                   "game": game.GameState(),
                   "scores": scores.ScoresState(),
+                  "instructions": instructions.InstructionsState()
                   }
 
     game_control = control.Control(1000.0 / DESIRED_FPS)
