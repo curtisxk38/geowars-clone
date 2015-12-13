@@ -2,11 +2,7 @@ import pygame
 import control
 import button
 import pickle
-
-BLACK = (0,0,0)
-ORANGE = (255, 102, 0)
-TRANSPARENT = (0, 0, 0, 0)
-
+import colors
 
 class InstructionsState(control.State):
     def __init__(self):
@@ -31,12 +27,12 @@ class InstructionsState(control.State):
     def make_menu_button(self):
         rect = pygame.Rect(0, 0, 80, 20)
         rect.centerx, rect.centery = pygame.display.get_surface().get_size()[0]/2, pygame.display.get_surface().get_size()[1]-60
-        my_button = button.Button(rect, "Menu", BLACK, 15, self.finish)
+        my_button = button.Button(rect, "Menu", colors.WHITE, 15, self.finish)
         return my_button
 
     def make_text(self):
         for i in range(len(self.key_list)):
-            text = self.font.render("Move " + self.key_list[i] + ": ", True, BLACK)
+            text = self.font.render("Move " + self.key_list[i] + ": ", True, colors.WHITE)
             rect = text.get_rect()
             rect.topleft = (40, 200 + i * 40)
             self.text.append((text, rect))
@@ -69,7 +65,7 @@ class InstructionsState(control.State):
     def make_key_buttons(self):
         for i in range(len(self.key_list)):
             rect = pygame.Rect(180, 200 + i * 40, 60, 20)
-            self.key_buttons.append(button.Button(rect, pygame.key.name(self.key_bindings[self.key_list[i]]), BLACK, 15, self.key_func[i]))
+            self.key_buttons.append(button.Button(rect, pygame.key.name(self.key_bindings[self.key_list[i]]), colors.WHITE, 15, self.key_func[i]))
 
     def load_keybindings(self):
         try:
@@ -108,7 +104,7 @@ class InstructionsState(control.State):
             self.bind_key(event.key)
 
     def update(self, screen):
-        screen.fill((255, 255, 255))
+        screen.fill(colors.BLACK)
         for button in self.key_buttons:
             button.update(screen)
         self.menu_button.update(screen)
