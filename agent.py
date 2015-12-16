@@ -24,6 +24,7 @@ class AgentSpawner():
         self.spawn_list = [
                            [0, 0, 800, WanderAgent],
                            [15, 0, 1000, SeekAgent],
+                           [50, 0, 1200, FleeAgent],
                           ]
 
     def agent_limit(self, score):
@@ -167,7 +168,7 @@ class WanderAgent(Agent):
         Agent.__init__(self, x, y)
         #self.image = pygame.image.load(os.path.join("data", "wander.bmp"))
         surface = pygame.Surface((16,16))
-        surface.fill((255,0,0))
+        surface.fill(colors.RED)
         self.image = surface
         self.image.convert()
         self.rect = self.image.get_rect()#pygame.Rect(0, 0, 16, 16)
@@ -186,7 +187,6 @@ class WanderAgent(Agent):
             self.w_angle += (math.pi / 2)
             if self.w_angle > 2* math.pi:
                 self.w_angle -= 2* math.pi
-
         self.pos.x, self.pos.y = self.rect.center
 
 class SeekAgent(Agent):
@@ -194,7 +194,7 @@ class SeekAgent(Agent):
         Agent.__init__(self, x, y)
 
         surface = pygame.Surface((16,16))
-        surface.fill((0,255,0))
+        surface.fill(colors.GREEN)
         self.image = surface
         self.image.convert()
         self.rect = self.image.get_rect()#pygame.Rect(0, 0, 16, 16)
@@ -204,12 +204,56 @@ class SeekAgent(Agent):
         self.max_force = 8.0
 
     def update(self, player):
-        steering = self.seek(player.pos)
+        steering = self.seek(player.pos) + self.wander()
         steering = get_truncate_vector(steering, self.max_force)
         steering /= self.mass
         self.velocity += steering
         self.velocity = get_truncate_vector(self.velocity, self.max_speed)
 
         self.move()
-
         self.pos.x, self.pos.y = self.rect.center
+
+class FleeAgent(Agent):
+    def __init__(self, x, y):
+        Agent.__init__(self, x, y)
+        
+        surface = pygame.Surface((16,16))
+        surface.fill(colors.BLUE)
+        self.image = surface
+        self.image.convert()
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+        
+        self.flee_radius = 80
+        
+        self.max_velocity = 10
+        self.max_speed = 10
+        
+    def update(self, player):
+        steering = self.flee_vector(player.bullet_list) + self.wander()
+        steering = get_truncate_vector(steering, self.max_force)
+        steering /= self.mass
+        self.velocity += steering
+        self.velocity = get_truncate_vector(self.velocity, self.max_speed)
+        
+        if self.move():
+            self.w_angle += (math.pi / 2)
+            if self.w_angle > 2* math.pi:
+                self.w_angle -= 2* math.pi
+        self.pos.x, self.pos.y = self.rect.center
+    
+    def flee_vector(self, b_list):
+        if len(b_list) == 0:
+            return pygame.math.Vector2(0, 0)
+        index, min_dist = self.find_nearest_bullet(b_list)
+        if min_dist < self.flee_radius**2:
+            return self.flee(b_list[index].pos)
+        return pygame.math.Vector2(0, 0)
+        
+    def find_nearest_bullet(self, b_list):
+        dist = [(self.pos - b.pos).length_squared() for b in b_list]
+        min_dist = min(dist)
+        index = dist.index(min_dist)
+        return index, min_dist
+        
+    
