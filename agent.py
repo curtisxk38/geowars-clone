@@ -204,7 +204,7 @@ class SeekAgent(Agent):
         self.max_force = 8.0
 
     def update(self, player):
-        steering = self.seek(player.pos) + self.wander()
+        steering = self.seek(player.pos)
         steering = get_truncate_vector(steering, self.max_force)
         steering /= self.mass
         self.velocity += steering
