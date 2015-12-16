@@ -22,9 +22,9 @@ class AgentSpawner():
         self.safe_rect = pygame.Rect(0, 0, safe_length, safe_length)
         # Score to start spawning at, tick last spawned, tick duration before spawning again, Agent type
         self.spawn_list = [
-                                        [0, 0, 800, WanderAgent],
-                                        [15, 0, 1000, SeekAgent],
-                                        ]
+                           [0, 0, 800, WanderAgent],
+                           [15, 0, 1000, SeekAgent],
+                          ]
 
     def agent_limit(self, score):
         agent_limit = 20
@@ -78,13 +78,39 @@ class Agent:
         self.w_circle_distance = .6
         self.w_circle_radius = .5
         self.w_angle_variance = math.pi / 6
+    
+    def move(self):
+        # update each axis one at a time
+        x = y = False
+        if self.velocity.x != 0:
+            x = self.move_on_direction(self.velocity.x, 0)
+        if self.velocity.y != 0:
+            y = self.move_on_direction(0, self.velocity.y)
+        return x or y
 
-    def agent_update(self, steering):
-        steering = get_truncate_vector(steering, self.max_force)
-        steering /= self.mass
-        self.velocity += steering
-        self.velocity = get_truncate_vector(self.velocity, self.max_speed)
-        self.pos += self.velocity
+    def move_on_direction(self, dx, dy):
+        self.rect.move_ip(dx, dy)
+        wall_collision = self.rect.collidelist(wall.wall_list)
+        if wall_collision != -1:
+        # if there is a collision:
+            if dx > 0:
+                # moving right, hit left side of wall
+                self.rect.right = wall.wall_list[wall_collision].rect.left
+                self.velocity.x *= -1
+            if dx < 0:
+                # moving left, hit right side of wall
+                self.rect.left = wall.wall_list[wall_collision].rect.right
+                self.velocity.x *= -1
+            if dy > 0:
+                # moving down, hit top of wall
+                self.rect.bottom = wall.wall_list[wall_collision].rect.top
+                self.velocity.y *= -1
+            if dy < 0:
+                # moving up, hit bottom of wall
+                self.rect.top = wall.wall_list[wall_collision].rect.bottom
+                self.velocity.y *= -1
+            return True
+        return False
 
     def seek(self, target):
         # target is a vector
@@ -156,40 +182,12 @@ class WanderAgent(Agent):
         self.velocity += steering
         self.velocity = get_truncate_vector(self.velocity, self.max_speed)
 
-        self.move()
-
-        self.pos.x, self.pos.y = self.rect.center
-
-    def move(self):
-        # update each axis one at a time
-        if self.velocity.x != 0:
-            self.move_on_direction(self.velocity.x, 0)
-        if self.velocity.y != 0:
-            self.move_on_direction(0, self.velocity.y)
-
-    def move_on_direction(self, dx, dy):
-        self.rect.move_ip(dx, dy)
-        wall_collision = self.rect.collidelist(wall.wall_list)
-        if wall_collision != -1: # if there is a collision:
-            if dx > 0:
-        # moving right, hit left side of wall
-                self.rect.right = wall.wall_list[wall_collision].rect.left
-                self.velocity.x *= -1
-            if dx < 0:
-                # moving left, hit right side of wall
-                self.rect.left = wall.wall_list[wall_collision].rect.right
-                self.velocity.x *= -1
-            if dy > 0:
-                # moving down, hit top of wall
-                self.rect.bottom = wall.wall_list[wall_collision].rect.top
-                self.velocity.y *= -1
-            if dy < 0:
-                # moving up, hit bottom of wall
-                self.rect.top = wall.wall_list[wall_collision].rect.bottom
-                self.velocity.y *= -1
+        if self.move():
             self.w_angle += (math.pi / 2)
             if self.w_angle > 2* math.pi:
                 self.w_angle -= 2* math.pi
+
+        self.pos.x, self.pos.y = self.rect.center
 
 class SeekAgent(Agent):
     def __init__(self, x , y):
@@ -215,31 +213,3 @@ class SeekAgent(Agent):
         self.move()
 
         self.pos.x, self.pos.y = self.rect.center
-
-    def move(self):
-        # update each axis one at a time
-        if self.velocity.x != 0:
-            self.move_on_direction(self.velocity.x, 0)
-        if self.velocity.y != 0:
-            self.move_on_direction(0, self.velocity.y)
-
-    def move_on_direction(self, dx, dy):
-        self.rect.move_ip(dx, dy)
-        wall_collision = self.rect.collidelist(wall.wall_list)
-        if wall_collision != -1: # if there is a collision:
-            if dx > 0:
-                # moving right, hit left side of wall
-                self.rect.right = wall.wall_list[wall_collision].rect.left
-                self.velocity.x *= -1
-            if dx < 0:
-                # moving left, hit right side of wall
-                self.rect.left = wall.wall_list[wall_collision].rect.right
-                self.velocity.x *= -1
-            if dy > 0:
-                # moving down, hit top of wall
-                self.rect.bottom = wall.wall_list[wall_collision].rect.top
-                self.velocity.y *= -1
-            if dy < 0:
-                # moving up, hit bottom of wall
-                self.rect.top = wall.wall_list[wall_collision].rect.bottom
-                self.velocity.y *= -1
