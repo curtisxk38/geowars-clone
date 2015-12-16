@@ -20,10 +20,10 @@ class AgentSpawner():
     def __init__(self, level_size, safe_length):
         self.level_size = level_size
         self.safe_rect = pygame.Rect(0, 0, safe_length, safe_length)
-        # Tick to start spawning at, tick last spawned, tick duration before spawning again, Agent type
+        # Score to start spawning at, tick last spawned, tick duration before spawning again, Agent type
         self.spawn_list = [
                                         [0, 0, 800, WanderAgent],
-                                        [0, 0, 1000, SeekAgent],
+                                        [15, 0, 1000, SeekAgent],
                                         ]
 
     def agent_limit(self, score):
@@ -35,7 +35,7 @@ class AgentSpawner():
     def update(self, now, player_pos, score):
         if len(agent_list) < self.agent_limit(score):
             for entry in self.spawn_list:
-                if entry[0] <= now and now - entry[1] > entry[2]:
+                if entry[0] <= score and now - entry[1] > entry[2]:
                     self.spawn(entry[3], player_pos)
                     entry[1] = now
 
