@@ -48,7 +48,7 @@ class AgentSpawner():
         while not safe:
             point = pygame.math.Vector2(self.get_random_xy())
             diff = player_pos - point
-            safe = diff.length_squared() >= self.radius
+            safe = diff.length_squared() >= self.radius**2
         agent(point.x, point.y)
 
 
