@@ -39,7 +39,7 @@ class GameState(control.State):
         self.score_text_rect = pygame.Rect(SCREEN_SIZE[0] - 40, SCREEN_SIZE[1] - 40, 16, 50)
 
         self.my_camera = camera.Camera(simple_camera, *TOTAL_LEVEL_SIZE)
-        self.spawner = agent.AgentSpawner((960, 480) , 80)
+        self.spawner = agent.AgentSpawner((960, 480) , 120)
 
     def startup(self):
         self.now = 0

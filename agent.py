@@ -17,9 +17,9 @@ def get_truncate_vector(vector, limit):
     return vector
 
 class AgentSpawner():
-    def __init__(self, level_size, safe_length):
+    def __init__(self, level_size, safe_radius):
         self.level_size = level_size
-        self.safe_rect = pygame.Rect(0, 0, safe_length, safe_length)
+        self.radius = safe_radius
         # Score to start spawning at, tick last spawned, tick duration before spawning again, Agent type
         self.spawn_list = [
                            [0, 0, 800, WanderAgent],
@@ -39,27 +39,17 @@ class AgentSpawner():
                 if entry[0] <= score and now - entry[1] > entry[2]:
                     self.spawn(entry[3], player_pos)
                     entry[1] = now
-
+    
+    def get_random_xy(self):
+        return random.randint(30, self.level_size[0] - 30), random.randint(30, self.level_size[1] - 30)
+    
     def spawn(self, agent, player_pos):
-        x = random.randint(30, self.level_size[0] - 30)
-        y = random.randint(30, self.level_size[1] - 30)
-        self.safe_rect.center = (player_pos.x, player_pos.y)
-        if self.safe_rect.collidepoint(x, y):
-            # This is actually bad code
-            # Maybe later, replace it with a better way of moving the coordinates x, y
-            #   outside of the safe rect
-
-            # This actually is even worse than bad, it has a bug
-            # If the player is near/touching the wall of the map,
-            # the spawner might try to spawn on the player then this code will occur
-            # and it will move the spawn location outside of the walls of the map
-            if math.fabs(x - player_pos.x) > math.fabs(y - player_pos.y):
-                while self.safe_rect.collidepoint(x, y):
-                    x += 10
-            else:
-                while self.safe_rect.collidepoint(x, y):
-                    y += 10
-        agent(x, y)
+        safe = False
+        while not safe:
+            point = pygame.math.Vector2(self.get_random_xy())
+            diff = player_pos - point
+            safe = diff.length_squared() >= self.radius
+        agent(point.x, point.y)
 
 
 class Agent:
