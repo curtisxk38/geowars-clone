@@ -13,6 +13,11 @@ class Player(pygame.sprite.Sprite):
         self.original_image = self.image
         self.rect = self.image.get_rect()
 
+        self.life = 3
+        self.invuln = False
+        self.invuln_timer = 2000
+        self.hurt_last = 0
+        
         self.autofire_timer = 120
         self.autofire_last = 0
 
@@ -30,11 +35,20 @@ class Player(pygame.sprite.Sprite):
         self.PROJECTILE_SPEED = 10
         self.bullet_list = []
 
-    def update(self):
+    def update(self, now):
         self.set_velocity()
         self.update_direction()
         self.move()
         self.pos.x, self.pos.y = self.rect.center
+        
+        if self.invuln and now - self.hurt_last >= self.invuln_timer:
+            self.invuln = False
+    
+    def hurt(self, now):
+        if not self.invuln:
+            self.life -= 1
+            self.hurt_last = now
+            self.invuln = True
 
     def set_velocity(self):
         # not so good way of handling presses and releases of inputs

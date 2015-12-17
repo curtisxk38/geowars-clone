@@ -31,7 +31,6 @@ class GameState(control.State):
         self.make_level()
         self.all_sprites = pygame.sprite.Group(wall.wall_list)
 
-        self.life = 3
         self.life_text = None
         self.life_text_rect = pygame.Rect(40, SCREEN_SIZE[1] - 40, 16, 16)
 
@@ -44,16 +43,14 @@ class GameState(control.State):
 
     def startup(self):
         self.now = 0
-        self.life = 3
         self.score = 0
+        self.my_player = player.Player(50, 50)
+        self.all_sprites.add(self.my_player)
 
         self.key_bindings_dict = self.load_key_bindings()
         self.player_pressed_dict = self.make_player_dict()
         self.update_life_text()
         self.update_score_text()
-
-        self.my_player = player.Player(50, 50)
-        self.all_sprites.add(self.my_player)
         
     def load_key_bindings(self):
         try:
@@ -87,7 +84,7 @@ class GameState(control.State):
                 self.my_player.shoot(self.mouse_list)
 
     def update_life_text(self):
-        self.life_text = self.font.render(str(self.life), True, colors.WHITE)
+        self.life_text = self.font.render(str(self.my_player.life), True, colors.WHITE)
     def update_score_text(self):
         self.score_text = self.font.render(str(self.score), True, colors.WHITE)
 
@@ -108,7 +105,7 @@ class GameState(control.State):
         self.update_mouse_list()
         self.autofire()
 
-        self.my_player.update()
+        self.my_player.update(self.now)
         self.my_camera.update(self.my_player)
         self.spawner.update(self.now, self.my_player.pos, self.score)
 
@@ -120,7 +117,7 @@ class GameState(control.State):
             x.update(self.my_player)
             if x.rect.colliderect(self.my_player.rect):
                 agent.agent_list.remove(x)
-                self.life -= 1
+                self.my_player.hurt(self.now)
                 self.update_life_text()
             else:
                 collision = x.rect.collidelist(self.my_player.bullet_list)
@@ -132,14 +129,18 @@ class GameState(control.State):
         # Draw
         screen.fill(colors.BLACK)
         for thing in self.all_sprites:
-            screen.blit(thing.image, self.my_camera.apply(thing.rect))
+            rect = self.my_camera.apply(thing.rect)
+            screen.blit(thing.image, rect)
+            if isinstance(thing, player.Player) and thing.invuln:
+                pygame.draw.circle(screen, colors.WHITE, rect.center, 12, 2)
         for bullet in self.my_player.bullet_list:
             screen.blit(bullet.image, self.my_camera.apply(bullet.rect))
         for x in agent.agent_list:
             screen.blit(x.image, self.my_camera.apply(x.rect))
         screen.blit(self.score_text, self.score_text_rect)
         screen.blit(self.life_text, self.life_text_rect)
-        if self.life <= 0:
+        
+        if self.my_player.life <= 0:
             self.done = True
 
     def make_player_dict(self):
