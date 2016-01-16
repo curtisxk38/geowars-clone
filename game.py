@@ -80,7 +80,7 @@ class GameState(control.State):
         if event.type == pygame.MOUSEBUTTONDOWN:
             # get_pressed() returns a tuple with booleans
             # for (leftclick, mwheelclick, rightclick)
-            if pygame.mouse.get_pressed()[0] == 1 and not key_bindings_dict["AUTOFIRE"]:
+            if pygame.mouse.get_pressed()[0] == 1 and not self.key_bindings_dict["AUTOFIRE"]:
                 self.my_player.shoot(self.mouse_list)
 
     def update_life_text(self):
